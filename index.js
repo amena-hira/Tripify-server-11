@@ -1,5 +1,9 @@
 const express = require('express')
 const cors = require('cors');
+require('dotenv').config();
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
+
 
 const app = express()
 const port = process.env.PORT || 5000
@@ -7,12 +11,35 @@ const port = process.env.PORT || 5000
 app.use(cors());
 app.use(express.json())
 
+user = process.env.DB_USER;
+password = process.env.DB_PASSWORD;
+
+const uri = `mongodb+srv://${user}:${password}@cluster0.cwbwt8c.mongodb.net/?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 async function run(){
-    
+    try{
+        const serviceCollection = client.db('tripify').collection('services');
+
+        app.post('/jwt', async(req, res) =>{
+            const user = req.body;
+            console.log(user);
+        })
+        app.post('/services', async(req, res) =>{
+            const service = req.body;
+            console.log(service);
+            const result = await serviceCollection.insertOne(service);
+            res.send(result);
+        })
+    }
+    finally{
+
+    }
 }
+run().catch(error => console.log(error));
 
 app.get('/', (req, res) => {
-  res.send('Tipify server is running!')
+  res.send('Tripify server is running!')
 })
 
 app.listen(port, () => {
