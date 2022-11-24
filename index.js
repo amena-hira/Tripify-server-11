@@ -22,11 +22,21 @@ async function run(){
     try{
         const serviceCollection = client.db('tripify').collection('services');
 
+        // jwt token
         app.post('/jwt', async(req, res) =>{
             const user = req.body;
             console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
             res.send({token});
+        })
+
+        // service db
+        app.get('/services', async(req, res)=>{
+            const size = 3;
+            const query = {};
+            const cursor = serviceCollection.find(query);
+            const services = await cursor.limit(size).toArray();
+            res.send(services);
         })
         app.post('/services', async(req, res) =>{
             const service = req.body;
@@ -34,6 +44,7 @@ async function run(){
             const result = await serviceCollection.insertOne(service);
             res.send(result);
         })
+        
     }
     finally{
 
