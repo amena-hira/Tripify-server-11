@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const { query } = require('express');
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 
 const app = express()
@@ -31,6 +31,7 @@ async function run(){
         })
 
         // service db
+        // limit3
         app.get('/services', async(req, res)=>{
             const size = 3;
             const query = {};
@@ -38,6 +39,21 @@ async function run(){
             const services = await cursor.limit(size).toArray();
             res.send(services);
         })
+        // all
+        app.get('/allservices', async(req, res)=>{
+            const query = {};
+            const cursor = serviceCollection.find(query);
+            const services = await cursor.toArray();
+            res.send(services);
+        })
+        // one
+        app.get('/services/:id', async(req,res) =>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)}
+            const service = await serviceCollection.findOne(query);
+            res.send(service);
+        })
+        // add
         app.post('/services', async(req, res) =>{
             const service = req.body;
             console.log(service);
