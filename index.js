@@ -70,6 +70,43 @@ async function run(){
             const reviews = await cursor.toArray();
             res.send(reviews);
         })
+        // one review
+        app.get('/reviews/:id', async(req,res) =>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)}
+            const review = await reviewCollection.findOne(query);
+            res.send(review);
+        })
+        // add Review
+        app.post('/reviews', async(req, res) =>{
+            const review = req.body;
+            console.log(review);
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        })
+        // update review
+        app.patch('/reviews/:id', async(req, res) =>{
+            const id = req.params.id;
+            const reviewText = req.body.reviewText;
+            const query = {_id: ObjectId(id)};
+            const updateDoc = {
+                $set:{
+                    reviewText: reviewText
+                }
+            }
+            // console.log(updateDoc);
+            const result = await reviewCollection.updateOne(query, updateDoc);
+            res.send(result);
+        })
+        // delete Review
+        app.delete('/reviews/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await reviewCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
         // Service based one Review
         app.get('/service/reviews/:id', async(req,res) =>{
             const id = req.params.id;
@@ -79,23 +116,16 @@ async function run(){
             const reviews = await cursor.toArray();
             res.send(reviews);
         })
-        // add Review
-        app.post('/reviews', async(req, res) =>{
-            const review = req.body;
-            console.log(review);
-            const result = await reviewCollection.insertOne(review);
-            res.send(result);
-        })
         // user Based Review
         app.get('/user/review', async (req,res) =>{
             let query = {
                 email: req.query.email
             };
-            // console.log('email: ',req.query.email);
             const cursor = reviewCollection.find(query);
             const orders = await cursor.toArray();
             res.send(orders);
         })
+
 
         
     }
