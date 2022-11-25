@@ -18,6 +18,21 @@ password = process.env.DB_PASSWORD;
 const uri = `mongodb+srv://${user}:${password}@cluster0.cwbwt8c.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next){
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({message: 'unauthorized access'});
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(401).send({message: 'unauthorized access'});
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 async function run(){
     try{
         const serviceCollection = client.db('tripify').collection('services');
@@ -117,10 +132,19 @@ async function run(){
             res.send(reviews);
         })
         // user Based Review
-        app.get('/user/review', async (req,res) =>{
-            let query = {
-                email: req.query.email
-            };
+        app.get('/user/review', verifyJWT, async (req,res) =>{
+            const decoded = req.decoded;
+            console.log('inside api: ', decoded);
+            let query = {};
+            if (decoded.email !== req.query.email) {
+                res.status(403).send({message: 'unauthorized accesss'})
+            }
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            console.log(req.query.email);
             const cursor = reviewCollection.find(query);
             const orders = await cursor.toArray();
             res.send(orders);
