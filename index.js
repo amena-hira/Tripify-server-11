@@ -58,7 +58,7 @@ async function run(){
         // all service
         app.get('/allservices', async(req, res)=>{
             const query = {};
-            const cursor = serviceCollection.find(query);
+            const cursor = serviceCollection.find(query).hint( { $natural : -1 } );
             const services = await cursor.toArray();
             res.send(services);
         })
